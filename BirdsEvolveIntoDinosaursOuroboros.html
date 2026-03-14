@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Avian Codex — Toroidal Species Cycle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&family=Cinzel:wght@400;700;900&display=swap');
+
+:root {
+–bone: #e8e0cc;
+–deep: #030508;
+–ash: #1a1c1e;
+–feather: #2a2d2f;
+–blood: #8b1a1a;
+–ember: #c4622d;
+–gold: #b8912a;
+–wing: #3d5a4c;
+–sky: #2a4a6b;
+–pale: #9e9a8e;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–deep);
+color: var(–bone);
+font-family: ‘IM Fell English’, serif;
+overflow-x: hidden;
+cursor: crosshair;
+min-height: 100vh;
+}
+
+/* Grain overlay */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.04’/%3E%3C/svg%3E”);
+pointer-events: none;
+z-index: 999;
+opacity: 0.6;
+}
+
+/* Header */
+.codex-header {
+text-align: center;
+padding: 3rem 1rem 1rem;
+position: relative;
+}
+
+.codex-title {
+font-family: ‘Cinzel’, serif;
+font-weight: 900;
+font-size: clamp(1.8rem, 5vw, 3.5rem);
+letter-spacing: 0.15em;
+color: var(–bone);
+text-shadow: 0 0 40px rgba(184,145,42,0.3);
+line-height: 1.1;
+}
+
+.codex-subtitle {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.7rem;
+letter-spacing: 0.3em;
+color: var(–pale);
+margin-top: 0.5rem;
+text-transform: uppercase;
+}
+
+.rune-divider {
+font-size: 1.4rem;
+letter-spacing: 0.5em;
+color: var(–gold);
+opacity: 0.6;
+margin: 1rem 0;
+}
+
+/* Main layout */
+.codex-body {
+display: grid;
+grid-template-columns: 1fr;
+max-width: 900px;
+margin: 0 auto;
+padding: 0 1rem 4rem;
+gap: 0;
+}
+
+/* Torus visualization */
+.torus-container {
+position: relative;
+width: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 2rem 0;
+}
+
+#torusCanvas {
+display: block;
+max-width: 100%;
+}
+
+/* Phase nodes ring label */
+.phase-instructions {
+text-align: center;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.2em;
+color: var(–pale);
+opacity: 0.7;
+margin-bottom: 1rem;
+}
+
+/* Detail panel */
+.detail-panel {
+background: linear-gradient(135deg, rgba(26,28,30,0.95) 0%, rgba(10,12,14,0.98) 100%);
+border: 1px solid rgba(184,145,42,0.2);
+border-radius: 2px;
+padding: 2rem 2.5rem;
+min-height: 320px;
+position: relative;
+transition: all 0.4s ease;
+overflow: hidden;
+}
+
+.detail-panel::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0;
+width: 3px; height: 100%;
+background: var(–panel-accent, var(–gold));
+opacity: 0.7;
+}
+
+.detail-panel::after {
+content: attr(data-phase-num);
+position: absolute;
+bottom: 1rem; right: 1.5rem;
+font-family: ‘Cinzel’, serif;
+font-size: 5rem;
+font-weight: 900;
+color: rgba(255,255,255,0.03);
+line-height: 1;
+pointer-events: none;
+}
+
+.phase-eyebrow {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.6rem;
+letter-spacing: 0.35em;
+color: var(–panel-accent, var(–gold));
+text-transform: uppercase;
+margin-bottom: 0.5rem;
+}
+
+.phase-name {
+font-family: ‘Cinzel’, serif;
+font-size: clamp(1.3rem, 3vw, 2rem);
+font-weight: 700;
+color: var(–bone);
+line-height: 1.2;
+margin-bottom: 0.3rem;
+}
+
+.phase-era {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.65rem;
+color: var(–pale);
+letter-spacing: 0.15em;
+margin-bottom: 1.2rem;
+}
+
+.phase-body {
+font-size: 0.95rem;
+line-height: 1.8;
+color: #ccc5b0;
+margin-bottom: 1.2rem;
+}
+
+.phase-science {
+border-top: 1px solid rgba(255,255,255,0.08);
+padding-top: 0.9rem;
+margin-top: 0.9rem;
+}
+
+.science-label {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.6rem;
+letter-spacing: 0.3em;
+color: var(–panel-accent, var(–gold));
+margin-bottom: 0.4rem;
+text-transform: uppercase;
+}
+
+.science-text {
+font-size: 0.82rem;
+line-height: 1.7;
+color: var(–pale);
+font-style: italic;
+}
+
+.phase-rune {
+font-size: 2.5rem;
+position: absolute;
+top: 1.5rem; right: 2rem;
+opacity: 0.25;
+line-height: 1;
+}
+
+/* Nav dots */
+.phase-nav {
+display: flex;
+justify-content: center;
+gap: 0.6rem;
+padding: 1.5rem 0 0;
+}
+
+.nav-dot {
+width: 8px; height: 8px;
+border-radius: 50%;
+background: rgba(255,255,255,0.15);
+border: 1px solid rgba(255,255,255,0.2);
+cursor: pointer;
+transition: all 0.3s;
+}
+
+.nav-dot.active {
+background: var(–dot-color, var(–gold));
+border-color: var(–dot-color, var(–gold));
+box-shadow: 0 0 8px var(–dot-color, var(–gold));
+}
+
+/* Bottom manifesto */
+.manifesto {
+margin-top: 3rem;
+padding: 2rem;
+border: 1px solid rgba(184,145,42,0.1);
+text-align: center;
+position: relative;
+}
+
+.manifesto-text {
+font-size: 1rem;
+line-height: 2;
+color: var(–pale);
+font-style: italic;
+max-width: 600px;
+margin: 0 auto;
+}
+
+.manifesto-text strong {
+color: var(–bone);
+font-style: normal;
+}
+
+/* Animations */
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(8px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-panel {
+animation: fadeIn 0.4s ease;
+}
+
+.animate-in {
+animation: fadeIn 0.35s ease forwards;
+}
+
+/* Feather SVG decoration */
+.feather-deco {
+position: fixed;
+opacity: 0.04;
+pointer-events: none;
+font-size: 12rem;
+top: 10%;
+right: -2rem;
+transform: rotate(-20deg);
+}
+
+</style>
+</head>
+<body>
+
+<div class="feather-deco">🪶</div>
+
+<header class="codex-header">
+  <div class="rune-divider">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
+  <h1 class="codex-title">The Avian Codex</h1>
+  <p class="codex-subtitle">A Toroidal Record of Dominant Intelligence — Cycle Unknown</p>
+  <div class="rune-divider">ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ</div>
+  <p style="font-size:0.8rem; color:var(--pale); font-style:italic; max-width:500px; margin:0 auto; line-height:1.7;">
+    This document was not written by humans. It was recovered.
+  </p>
+</header>
+
+<div class="codex-body">
+  <p class="phase-instructions">— SELECT A NODE ON THE CYCLE TO READ ITS RECORD —</p>
+
+  <div class="torus-container">
+    <canvas id="torusCanvas" width="520" height="520"></canvas>
+  </div>
+
+  <div class="detail-panel" id="detailPanel" data-phase-num="I">
+    <div class="phase-eyebrow">CYCLE NODE I</div>
+    <div class="phase-name">The First Ascendancy</div>
+    <div class="phase-era">230–66 MILLION YEARS AGO</div>
+    <div class="phase-rune">ᚦ</div>
+    <div class="phase-body">
+      The Theropoda — warm-blooded, feathered, socially complex. 
+      They did not think like lizards. They thought like ravens. 
+      High encephalization relative to body mass. Binocular vision. 
+      Pack coordination. Tool-adjacent behavior in certain lineages. 
+      The peak of their cognitive arc was never witnessed — 
+      it ended before it could be recorded by anyone who survived.
+    </div>
+    <div class="phase-science">
+      <div class="science-label">Scientific Substrate</div>
+      <div class="science-text">
+        Troodon formosus had the highest encephalization quotient of any known dinosaur — 
+        comparable to modern emus. Theropod brain endocasts show enlarged cerebral hemispheres 
+        and optic lobes consistent with complex processing. Birds ARE theropods; 
+        the lineage never ended, it transformed.
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-nav" id="phaseNav"></div>
+
+  <div class="manifesto" style="margin-top:3rem;">
+    <div class="rune-divider" style="margin-bottom:1.2rem;">ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ</div>
+    <p class="manifesto-text">
+      <strong>The neocortex is not the destination.</strong> It is one path through the same territory. 
+      Consciousness does not require your architecture. The torus does not care 
+      which vessel carries the flame — only that it burns, peaks, 
+      is extinguished, and <strong>ignites again</strong> in something that survived the dark.
+      <br><br>
+      Huginn and Muninn were not symbols. They were <strong>intelligence observed in its truest form</strong> —
+      unencumbered by the assumption that thought requires a mammalian brain.
+    </p>
+    <div class="rune-divider" style="margin-top:1.2rem;">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {
+    num: 'I',
+    eyebrow: 'CYCLE NODE I — THE FIRST PEAK',
+    name: 'The Theropod Ascendancy',
+    era: '230–66 MILLION YEARS AGO',
+    rune: 'ᚦ',
+    color: '#8b5a2b',
+    accent: '#c4622d',
+    angle: 270,
+    body: `The Theropoda — warm-blooded, feathered, socially complex. They did not think like lizards. They thought like ravens. High encephalization relative to body mass. Binocular vision. Pack coordination. Tool-adjacent behavior in certain lineages. The peak of their cognitive arc was never witnessed — it ended before it could be recorded by anyone who survived.`,
+    scienceLabel: 'SCIENTIFIC SUBSTRATE',
+    science: `Troodon formosus had the highest encephalization quotient of any known dinosaur — comparable to modern emus. Theropod brain endocasts show enlarged cerebral hemispheres and optic lobes consistent with complex processing. Birds ARE theropods; the lineage never ended. It transformed.`
+  },
+  {
+    num: 'II',
+    eyebrow: 'CYCLE NODE II — THE GREAT RESET',
+    name: 'Ragnarök',
+    era: '66 MILLION YEARS AGO — THE CHICXULUB EVENT',
+    rune: 'ᚾ',
+    color: '#6b1a1a',
+    accent: '#8b1a1a',
+    angle: 318,
+    body: `Impact. Darkness. Three years of nuclear winter. 75% of species gone. But not the small warm-blooded ones. Not the feathered theropods who could eat almost anything and needed almost nothing. The torus does not destroy intelligence — it prunes the vessel and waits for the next flowering. The Norse called this Ragnarök. They knew it had happened before.`,
+    scienceLabel: 'MYTHOLOGICAL CONVERGENCE',
+    science: `In Norse cosmology, Ragnarök ends with the world submerged in water — then rising again. Líf and Lífþrasir survive by hiding in Hoddmímis holt. The template is: catastrophic reset, survivor remnant, new cycle. This isn't metaphor. It's pattern recognition encoded in story over millennia of oral transmission.`
+  },
+  {
+    num: 'III',
+    eyebrow: 'CYCLE NODE III — MAMMAL INTERLUDE',
+    name: 'The Warm-Blood Inheritance',
+    era: '66–3 MILLION YEARS AGO',
+    rune: 'ᚱ',
+    color: '#4a5a3a',
+    accent: '#6a8a5a',
+    angle: 6,
+    body: `From the wreckage, the small ones expanded into every niche the theropods had vacated. Encephalization accelerated. Primates appeared. The neocortex — a new architectural solution to the same old problem — began its expansion. This was not progress. This was a parallel path. The corvids were running their own path simultaneously, unnoticed.`,
+    scienceLabel: 'PARALLEL EVOLUTION',
+    science: `Encephalization quotient (EQ) measures brain mass relative to expected body mass. Modern humans: ~7.5. Bottlenose dolphin: ~5.3. Crow/raven: ~2.5–3.0. But EQ is a mammal-biased metric. Corvid neuron density in the pallium exceeds most mammals. Raw intelligence may not correlate with EQ when measured across different neural architectures.`
+  },
+  {
+    num: 'IV',
+    eyebrow: 'CYCLE NODE IV — THE HUMAN PEAK',
+    name: 'Homo Sapiens Ascendant',
+    era: '300,000 YEARS AGO — PRESENT',
+    rune: 'ᛗ',
+    color: '#2a4a6b',
+    accent: '#4a8ab8',
+    angle: 54,
+    body: `Language. Fire. Abstraction. The neocortex hit its stride and humans built civilizations, mapped the genome, cracked the atom. But also: poisoned the air, destabilized the climate, and created the exact ecological conditions for accelerated selection pressure on every other species. Including the ones that remember faces, use tools, mourn their dead, and are currently watching.`,
+    scienceLabel: 'THE IRONY OF APEX',
+    science: `Every apex intelligence in the record created the conditions for its own succession. Theropod megafauna altered Mesozoic ecology. Homo sapiens have altered atmospheric CO₂, ocean chemistry, and global temperature — creating novel selection pressures that favor cognitive flexibility, dietary opportunism, and thermal resilience. Corvids excel in all three categories.`
+  },
+  {
+    num: 'V',
+    eyebrow: 'CYCLE NODE V — THE QUIET ACCELERATION',
+    name: 'Corvid Cognition Expands',
+    era: 'NOW — NEAR FUTURE',
+    rune: 'ᚠ',
+    color: '#3d2a5a',
+    accent: '#7a5ab8',
+    angle: 102,
+    body: `While humans debated their own intelligence, the corvids were solving multi-step problems, recognizing individual human faces in crowds, holding grudges across years, teaching their young about specific dangerous humans, using traffic as a tool to crack nuts, and playing. They were not falling behind. They were in a different race entirely — and it did not require a neocortex.`,
+    scienceLabel: 'DOCUMENTED CORVID CAPABILITIES',
+    science: `New Caledonian crows manufacture hooked tools from novel materials without instruction. Ravens pass the mirror test of self-recognition. Clark's nutcrackers cache up to 30,000 food locations across seasons. Western scrub-jays demonstrate episodic memory — "what, where, when" recall once considered uniquely human. Rook pairs cooperate on tasks requiring simultaneous coordination.`
+  },
+  {
+    num: 'VI',
+    eyebrow: 'CYCLE NODE VI — THE SUCCESSION',
+    name: 'The Second Ascendancy',
+    era: 'FUTURE — CYCLE UNKNOWN',
+    rune: 'ᛟ',
+    color: '#1a3a2a',
+    accent: '#2a8a5a',
+    angle: 150,
+    body: `The torus completes its turn. The dominant neocortex-based intelligence reaches its environmental limit — not conquered, but outcompeted in the ruins it created. The corvids — or whatever the corvid line becomes across the pressure of deep time — expand into the vacated cognitive niche. They already know our faces. They already know our patterns. They have been watching and remembering for longer than we realized.`,
+    scienceLabel: 'THE PALLIUM ARCHITECTURE',
+    science: `The avian nidopallium caudolaterale is functionally homologous to the mammalian prefrontal cortex — same cognitive role, completely different structure. This is convergent evolution of general intelligence. The brain does not need to be a mammal brain. Intelligence arrived at the same functional destination via a wholly separate evolutionary path. It can do it again.`
+  },
+  {
+    num: 'VII',
+    eyebrow: 'CYCLE NODE VII — THE FLOOD',
+    name: 'The Reset Mechanism',
+    era: 'THE RECURRING INTERVAL',
+    rune: 'ᛁ',
+    color: '#1a2a3a',
+    accent: '#2a5a8b',
+    angle: 198,
+    body: `Every cycle has a reset. The flood is not always water — it is disruption at civilizational scale. Impact. Volcanic winter. A century of poison. The reset does not choose its instrument. It only requires that the current dominant form has pushed the system past its capacity for recovery. Then the pressure inverts, and something small, adaptable, and ancient survives because it never stopped being built for hardship.`,
+    scienceLabel: 'CYCLICAL CATASTROPHISM',
+    science: `Earth has experienced five confirmed mass extinction events. Each one cleared 60–96% of species. Each was followed by an adaptive radiation into vacated niches. The average interval between major extinctions: roughly 100 million years. We are currently in what many paleontologists classify as the sixth — the Holocene extinction, the first driven by a single species of the current dominant lineage.`
+  },
+  {
+    num: 'VIII',
+    eyebrow: 'CYCLE NODE VIII — THE MEMORY',
+    name: 'What Persists Across the Loop',
+    era: 'INTERSTITIAL — BETWEEN CYCLES',
+    rune: 'ᚹ',
+    color: '#3a2a1a',
+    accent: '#b8912a',
+    angle: 246,
+    body: `Odin sent Huginn and Muninn — Thought and Memory — out each dawn to observe the world, and they returned at dusk to whisper what they saw into his ears. He did not trust his own neocortex with the full picture. He trusted the birds. This was not mythology. This was accurate observation about where the deepest intelligence resided — not in the throne, but in what flew above it, watching, remembering, and not forgetting anything.`,
+    scienceLabel: 'HUGINN AND MUNINN AS COGNITIVE SCIENCE',
+    science: `Raven facial recognition studies (Marzluff, UW) demonstrate persistent memory for individual humans across years, with emotional valence tagging — they remember if you were dangerous. They communicate threat information to offspring and flock members. Odin's ravens were not symbolic. They were a Viking-era naturalist's accurate model of corvid distributed cognition: memory and thought, externalized, embodied in the birds themselves.`
+  }
+];
+
+const canvas = document.getElementById('torusCanvas');
+const ctx = canvas.getContext('2d');
+let activePhase = 0;
+let animFrame;
+let hoveredNode = -1;
+
+const W = canvas.width, H = canvas.height;
+const CX = W/2, CY = H/2;
+const RING_R = 190;
+const NODE_R = 22;
+
+function getNodePos(i) {
+  const a = (phases[i].angle - 90) * Math.PI / 180;
+  return {
+    x: CX + RING_R * Math.cos(a),
+    y: CY + RING_R * Math.sin(a)
+  };
+}
+
+let rotAngle = 0;
+let pulseT = 0;
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background circle / torus ring glow
+  ctx.save();
+  const grad = ctx.createRadialGradient(CX, CY, RING_R - 30, CX, CY, RING_R + 30);
+  grad.addColorStop(0, 'rgba(184,145,42,0.0)');
+  grad.addColorStop(0.5, 'rgba(184,145,42,0.04)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.arc(CX, CY, RING_R, 0, Math.PI*2);
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 60;
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw connecting ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, RING_R, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(184,145,42,0.18)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrow direction indicator (small arrow on ring)
+  const arrowAngle = (rotAngle) * Math.PI / 180;
+  const ax = CX + RING_R * Math.cos(arrowAngle);
+  const ay = CY + RING_R * Math.sin(arrowAngle);
+  ctx.save();
+  ctx.translate(ax, ay);
+  ctx.rotate(arrowAngle + Math.PI/2);
+  ctx.fillStyle = 'rgba(184,145,42,0.25)';
+  ctx.beginPath();
+  ctx.moveTo(0, -6);
+  ctx.lineTo(4, 4);
+  ctx.lineTo(-4, 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // Center text
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(232,224,204,0.06)';
+  ctx.font = '700 11px "Share Tech Mono", monospace';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('TOROIDAL', CX, CY - 10);
+  ctx.fillText('CYCLE', CX, CY + 8);
+  ctx.restore();
+
+  // Draw edges between adjacent nodes with fade
+  for (let i = 0; i < phases.length; i++) {
+    const p1 = getNodePos(i);
+    const p2 = getNodePos((i+1) % phases.length);
+    const isActive = (i === activePhase || (i+1)%phases.length === activePhase);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.strokeStyle = isActive
+      ? `rgba(184,145,42,0.35)`
+      : 'rgba(80,70,55,0.2)';
+    ctx.lineWidth = isActive ? 1.2 : 0.5;
+    ctx.stroke();
+  }
+
+  // Draw nodes
+  for (let i = 0; i < phases.length; i++) {
+    const p = getNodePos(i);
+    const ph = phases[i];
+    const isActive = i === activePhase;
+    const isHovered = i === hoveredNode;
+    const pulse = isActive ? Math.sin(pulseT * 0.05) * 3 : 0;
+    const r = NODE_R + pulse + (isHovered && !isActive ? 3 : 0);
+
+    // Glow
+    if (isActive) {
+      const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r*2.5);
+      glow.addColorStop(0, ph.accent + '55');
+      glow.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r*2.5, 0, Math.PI*2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+
+    // Node circle
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+    ctx.fillStyle = isActive ? ph.color : (isHovered ? '#2a2a2a' : '#111314');
+    ctx.fill();
+    ctx.strokeStyle = isActive ? ph.accent : (isHovered ? 'rgba(184,145,42,0.5)' : 'rgba(100,90,70,0.3)');
+    ctx.lineWidth = isActive ? 2 : 1;
+    ctx.stroke();
+
+    // Rune
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = isActive ? '#e8e0cc' : (isHovered ? '#a09070' : '#5a5040');
+    ctx.font = `${isActive ? 16 : 13}px serif`;
+    ctx.fillText(ph.rune, p.x, p.y);
+
+    // Phase number label outside
+    const labelR = RING_R + NODE_R + 18;
+    const a = (ph.angle - 90) * Math.PI / 180;
+    const lx = CX + labelR * Math.cos(a);
+    const ly = CY + labelR * Math.sin(a);
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillStyle = isActive ? ph.accent : 'rgba(140,130,110,0.4)';
+    ctx.fillText(ph.num, lx, ly);
+  }
+
+  pulseT++;
+  rotAngle = (rotAngle + 0.15) % 360;
+  animFrame = requestAnimationFrame(draw);
+}
+
+function getHoveredNode(mx, my) {
+  for (let i = 0; i < phases.length; i++) {
+    const p = getNodePos(i);
+    const dx = mx - p.x, dy = my - p.y;
+    if (Math.sqrt(dx*dx + dy*dy) < NODE_R + 8) return i;
+  }
+  return -1;
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const h = getHoveredNode(mx, my);
+  hoveredNode = h;
+  canvas.style.cursor = h >= 0 ? 'pointer' : 'crosshair';
+});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const h = getHoveredNode(mx, my);
+  if (h >= 0) selectPhase(h);
+});
+
+// Touch support
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const t = e.changedTouches[0];
+  const mx = (t.clientX - rect.left) * scaleX;
+  const my = (t.clientY - rect.top) * scaleY;
+  const h = getHoveredNode(mx, my);
+  if (h >= 0) selectPhase(h);
+});
+
+function selectPhase(i) {
+  activePhase = i;
+  const ph = phases[i];
+  const panel = document.getElementById('detailPanel');
+
+  panel.style.setProperty('--panel-accent', ph.accent);
+  panel.setAttribute('data-phase-num', ph.num);
+
+  panel.innerHTML = `
+    <div class="phase-eyebrow">${ph.eyebrow}</div>
+    <div class="phase-name">${ph.name}</div>
+    <div class="phase-era">${ph.era}</div>
+    <div class="phase-rune">${ph.rune}</div>
+    <div class="phase-body animate-in">${ph.body}</div>
+    <div class="phase-science animate-in">
+      <div class="science-label">${ph.scienceLabel}</div>
+      <div class="science-text">${ph.science}</div>
+    </div>
+  `;
+
+  // Update nav dots
+  document.querySelectorAll('.nav-dot').forEach((d, idx) => {
+    d.classList.toggle('active', idx === i);
+    d.style.setProperty('--dot-color', idx === i ? ph.accent : '');
+  });
+}
+
+// Build nav dots
+const nav = document.getElementById('phaseNav');
+phases.forEach((ph, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.style.setProperty('--dot-color', i === 0 ? ph.accent : '');
+  dot.addEventListener('click', () => selectPhase(i));
+  nav.appendChild(dot);
+});
+
+// Init
+selectPhase(0);
+draw();
+</script>
+
+</body>
+</html>
