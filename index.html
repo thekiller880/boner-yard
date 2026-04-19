@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freehahn–Matthews Synthesis Engine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#070710;color:#bfb090;font-family:Georgia,serif;display:flex;flex-direction:column}
+#hdr{display:flex;justify-content:space-between;align-items:center;padding:7px 16px;border-bottom:1px solid rgba(180,140,60,.22);flex-shrink:0;flex-wrap:wrap;gap:6px}
+#hdr h1{font-size:.9rem;letter-spacing:.18em;color:#c8a840;text-transform:uppercase}
+#hdr .sub{font-size:.56rem;color:#403520;letter-spacing:.12em;margin-top:1px}
+#badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{border:1px solid rgba(180,140,60,.28);padding:2px 7px;font-size:.56rem;color:#c8a840;font-family:'Courier New',monospace;letter-spacing:.06em}
+#body{display:flex;flex:1;overflow:hidden}
+#codex{width:252px;flex-shrink:0;border-right:1px solid rgba(180,140,60,.16);overflow-y:auto;padding:12px;font-size:.68rem;line-height:1.65;scrollbar-width:thin;scrollbar-color:#2a2010 transparent;transition:width .3s ease,padding .3s ease,opacity .3s ease}
+#codex.hide{width:0;padding:0;opacity:0;overflow:hidden;pointer-events:none;border:none}
+#codex h2{font-size:.6rem;letter-spacing:.2em;color:#c8a840;text-transform:uppercase;border-bottom:1px solid rgba(180,140,60,.18);padding-bottom:4px;margin-bottom:11px}
+.bridge{margin-bottom:12px;padding:8px;background:rgba(12,8,4,.6);border-left:2px solid}
+.btitle{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}
+.eq{font-family:'Courier New',monospace;font-size:.65rem;color:#d0c098;margin:1px 0}
+.dyr{text-align:center;font-size:.95rem;letter-spacing:.4em;color:rgba(200,168,74,.22);margin:12px 0;font-style:italic}
+#wrap{flex:1;position:relative;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#rdout{position:absolute;top:10px;left:12px;z-index:10;font-family:'Courier New',monospace;font-size:.55rem;color:rgba(200,168,74,.4);line-height:1.85;white-space:pre;pointer-events:none}
+#ctrl{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:10;flex-wrap:wrap;justify-content:center}
+.btn{background:rgba(7,7,16,.92);border:1px solid rgba(180,140,60,.22);color:#807050;padding:4px 11px;font-size:.56rem;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;font-family:'Courier New',monospace;transition:all .18s}
+.btn:hover{border-color:rgba(180,140,60,.6);color:#c8a840}
+.btn.on{border-color:#c8a840;color:#c8a840;background:rgba(200,168,74,.07);box-shadow:0 0 9px rgba(200,168,74,.14)}
+#topbtns{position:absolute;top:10px;right:12px;z-index:10;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div>
+    <h1>Freehahn – Matthews Synthesis Engine</h1>
+    <div class="sub">David Freehahn · Field Codex · Michael Matthews · Onto-Mathematics · Fano / Octonion Layer</div>
+  </div>
+  <div id="badges">
+    <span class="badge">α⁻¹ = 137.036</span>
+    <span class="badge">7! = 5040 = |N|</span>
+    <span class="badge">6174 = 2·3²·7³</span>
+    <span class="badge">71≡+1 · 83≡−1 (mod 7)</span>
+  </div>
+</div>
+<div id="body">
+  <aside id="codex">
+    <h2>Synthesis Codex</h2>
+    <div class="dyr">DYR OPNAST</div>
+    <div style="text-align:center;font-size:.52rem;color:#302010;letter-spacing:.15em;margin-bottom:12px">THE DOOR OPENS</div>
+    <div class="bridge" style="border-color:rgba(200,168,74,.38)">
+      <div class="btitle" style="color:#c8a840">The 7-Prime Unification</div>
+      <div class="eq">210 = 2·3·5·<b style="color:#22d3ee">7</b>  David's wheel</div>
+      <div class="eq">5040 = <b style="color:#22d3ee">7!</b> = |lattice N|</div>
+      <div class="eq">6174 = 2·3²·<b style="color:#22d3ee">7³</b>  Kaprekar</div>
+      <div class="eq">Fano plane: order <b style="color:#22d3ee">7</b></div>
+      <div class="eq">Aut(𝕆) = G₂, dim = <b style="color:#22d3ee">14</b> = 2·7</div>
+    </div>
+    <div class="bridge" style="border-color:rgba(34,211,238,.38)">
+      <div class="btitle" style="color:#22d3ee">Antipodal Primes (mod 7)</div>
+      <div class="eq"><b style="color:#22d3ee">71</b> ≡ <b style="color:#22d3ee">+1</b> (mod 7)  identity</div>
+      <div class="eq"><b style="color:#f43f5e">83</b> ≡ <b style="color:#f43f5e">−1</b> (mod 7)  inversion</div>
+      <div class="eq">Core↔Shell = +1↔−1 in <b style="color:#22d3ee">F₇</b></div>
+    </div>
+    <div class="bridge" style="border-color:rgba(52,211,153,.38)">
+      <div class="btitle" style="color:#34d399">Octonion Bridge</div>
+      <div class="eq">Fano 7 pts = <b style="color:#34d399">e₁..e₇</b> (octonions)</div>
+      <div class="eq">7 lines = 7 quaternion H-subalg.</div>
+      <div class="eq">eᵢ × eⱼ = eₖ  iff {i,j,k} ∈ Fano</div>
+      <div class="eq">φ(5040) = 1152 = |W(F₄)|</div>
+    </div>
+    <div class="bridge" style="border-color:rgba(217,70,239,.38)">
+      <div class="btitle" style="color:#d946ef">Onto-Math Layer</div>
+      <div class="eq">sin(x) → base unit of thought</div>
+      <div class="eq">Fourier → mechanism of perception</div>
+      <div class="eq">Riemann ℂ∪{∞} → mind-domain</div>
+      <div class="eq"><b style="color:#22d3ee">71 Hz</b> → convergent mode</div>
+      <div class="eq"><b style="color:#f43f5e">83 Hz</b> → divergent mode</div>
+      <div class="eq"><b style="color:#34d399">12 Hz</b> → theta-alpha gate</div>
+    </div>
+    <div class="bridge" style="border-color:rgba(52,211,153,.28)">
+      <div class="btitle" style="color:#34d399">Quaternion Sphere (Fano 3D)</div>
+      <div class="eq">e₁..e₇ = unit octonions on S³</div>
+      <div class="eq"><b style="color:#f43f5e">i</b> = x-axis  <b style="color:#34d399">j</b> = y-axis  <b style="color:#818cf8">k</b> = z-axis</div>
+      <div class="eq">ij=k  jk=i  ki=j  (right-hand)</div>
+      <div class="eq">v' = q·v·q*  (sandwich product)</div>
+      <div class="eq" style="color:#403020;margin-top:3px">720° = identity (double cover) ∎</div>
+    </div>
+    <div class="bridge" style="border-color:rgba(255,180,50,.32)">
+      <div class="btitle" style="color:#fbb040">EM Field (ijk planes)</div>
+      <div class="eq"><b style="color:#f43f5e">E field</b>: lines arc + → − pole</div>
+      <div class="eq">particles flow along E-field lines</div>
+      <div class="eq"><b style="color:#818cf8">B field</b>: rings ⊥ to each axis</div>
+      <div class="eq">ij / ik / jk plane coupling shown</div>
+      <div class="eq" style="color:#403020;margin-top:3px">Maxwellian between planes ∎</div>
+    </div>
+    <div class="bridge" style="border-color:rgba(200,168,74,.22)">
+      <div class="btitle" style="color:#c8a840">AMORC φ-Bilateral Audio</div>
+      <div class="eq"><b style="color:#c8a840">432 Hz</b> -- Rosicrucian natural A</div>
+      <div class="eq"><b style="color:#d946ef">528 Hz</b> -- Solfeggio MI (sacred)</div>
+      <div class="eq">432 pan rate: ω</div>
+      <div class="eq">528 pan rate: ω × <b style="color:#c8a840">φ</b>  (never repeats)</div>
+      <div class="eq">beat: 96 Hz interference field</div>
+      <div class="eq" style="color:#403020;margin-top:3px">Golden spiral stereo ∎</div>
+    </div>
+    <div class="dyr" style="font-size:.62rem;margin-top:16px">⋯ ᚠᚢᚦᚨᚱᚲ ⋯</div>
+  </aside>
+
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div id="rdout">MODE: SYNTHESIS
+NODES: 1152 coprime of 7!
+FANO: e₁..e₇ active
+71≡+1 · 83≡−1 (mod 7)</div>
+    <div id="topbtns">
+      <button class="btn on" id="togbtn">☰ Codex</button>
+      <button class="btn" id="abtn">♪ AMORC φ-bilateral</button>
+    </div>
+    <div id="ctrl">
+      <button class="btn on" data-m="0">Synthesis</button>
+      <button class="btn" data-m="1">E₈ Proj.</button>
+      <button class="btn" data-m="2">Fano 3D</button>
+      <button class="btn" data-m="3">Riemann ℝ</button>
+      <button class="btn" data-m="4">Kaprekar</button>
+      <button class="btn" id="zetabtn">ζ Zeros</button>
+      <button class="btn" id="embtn">⚡ EM Field</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PHI=(1+Math.sqrt(5))/2, TAU=Math.PI*2;
+const C7=['#22d3ee','#34d399','#f43f5e','#d946ef','#818cf8','#fb923c','#c8a840'];
+
+// ══ QUATERNION MATH ══════════════════════
+function qMul(a,b){return{w:a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z,x:a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,y:a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,z:a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w}}
+function qNorm(q){const m=Math.sqrt(q.w*q.w+q.x*q.x+q.y*q.y+q.z*q.z)||1;return{w:q.w/m,x:q.x/m,y:q.y/m,z:q.z/m}}
+function qConj(q){return{w:q.w,x:-q.x,y:-q.y,z:-q.z}}
+function qFromAxis(ax,ay,az,ang){const s=Math.sin(ang/2);return{w:Math.cos(ang/2),x:ax*s,y:ay*s,z:az*s}}
+function qRotVec(q,x,y,z){const p={w:0,x,y,z},r=qMul(qMul(q,p),qConj(q));return[r.x,r.y,r.z]}
+
+const raw_axes=[[0,1,0],[-0.866,0.5,0.3],[0.866,0.5,-0.3],[-0.5,-0.5,0.6],[0.5,-0.5,-0.6],[0,0.6,0.8],[0,0,1]];
+const FANO_AXES=raw_axes.map(([x,y,z])=>{const m=Math.sqrt(x*x+y*y+z*z);return[x/m,y/m,z/m]});
+
+let qFano={w:1,x:0,y:0,z:0},qAxisIdx=0,qFrames=0,qCurrentAxis=FANO_AXES[0];
+const Q_DWELL=280;
+const gammaZ=[14.1347,21.0220,25.0108,30.4248,32.9350];
+let zetaOn=false, emOn=false;
+
+// ══ LATTICE ═══════════════════════════════
+function gcd(a,b){while(b){let t=b;b=a%b;a=t}return a}
+function isPrime(n){if(n<2)return false;if(n<4)return true;if(n%2==0||n%3==0)return false;for(let i=5;i*i<=n;i+=6)if(n%i==0||n%(i+2)==0)return false;return true}
+function dr(n){return n?1+(n-1)%9:0}
+const GS_R=[13,19,37,53,67,79,97,109,127,139,157,169,187,199];
+const nodes=[];
+for(let i=1;i<5040;i++){
+  if(gcd(i,5040)!==1)continue;
+  const m7=i%7,m210=i%210;
+  nodes.push({u:i,isGS:GS_R.includes(m210)&&[1,4,7,8].includes(dr(i))&&isPrime(i),m7,is71:i==71,is83:i==83});
+}
+nodes.forEach((n,idx)=>{
+  const t1=(n.u/5040)*TAU,t2=((n.u%210)/210)*TAU*6,R=112,r=40;
+  n.tx=(R+r*Math.cos(t2))*Math.cos(t1);n.ty=(R+r*Math.cos(t2))*Math.sin(t1);n.tz=r*Math.sin(t2);
+  const ga=Math.PI*(3-Math.sqrt(5)),rr=Math.sqrt(idx)*7.2;
+  n.ex=rr*Math.cos(idx*ga);n.ey=rr*Math.sin(idx*ga)*PHI;n.ez=Math.sin(idx*Math.PI/5)*38;
+  if(n.is71){n.ex=-58;n.ey=-58*PHI;n.ez=0}
+  if(n.is83){n.ex=58;n.ey=58*PHI;n.ez=0}
+});
+const e8=[];
+for(let i=0;i<8;i++)for(let j=i+1;j<8;j++)for(let a of[-1,1])for(let b of[-1,1]){let v=new Array(8).fill(0);v[i]=a;v[j]=b;e8.push(v)}
+for(let m=0;m<256;m++){let nc=0,v=[];for(let b=0;b<8;b++){if((m>>b)&1){v.push(-.5);nc++}else v.push(.5)}if(nc%2==0)e8.push(v)}
+const E8P=e8.map(v=>({x:(v[0]-v[1]+v[2]-v[3])*78,y:(v[4]-v[5]+v[6]-v[7])*78*PHI,z:(v[0]-v[4]+v[2]-v[6])*32}));
+
+const FR=88;
+const FP=[
+  {id:0,lbl:'e₁',x:0,y:-FR,z:0},{id:1,lbl:'e₂',x:-FR*.866,y:FR*.5,z:0},
+  {id:2,lbl:'e₃',x:FR*.866,y:FR*.5,z:0},{id:3,lbl:'e₄',x:-FR*.433,y:-FR*.25,z:0},
+  {id:4,lbl:'e₅',x:FR*.433,y:-FR*.25,z:0},{id:5,lbl:'e₆',x:0,y:FR*.5,z:0},
+  {id:6,lbl:'e₇',x:0,y:0,z:0},
+];
+const FL=[
+  {pts:[0,3,1],col:'#22d3ee',lbl:'e₁e₄=e₂'},{pts:[1,5,2],col:'#34d399',lbl:'e₂e₆=e₃'},
+  {pts:[2,4,0],col:'#f43f5e',lbl:'e₃e₅=e₁'},{pts:[0,6,5],col:'#d946ef',lbl:'e₁e₇=e₆'},
+  {pts:[1,6,4],col:'#818cf8',lbl:'e₂e₇=e₅'},{pts:[2,6,3],col:'#fb923c',lbl:'e₃e₇=e₄'},
+  {pts:[3,5,4],col:'#c8a840',lbl:'e₄e₆=e₅'},
+];
+function kapStep(n){const s=String(n).padStart(4,'0');return+[...s].sort((a,b)=>b-a).join('')-+[...s].sort().join('')}
+const KTRJ=[];
+for(let seed=1001;seed<=9998;seed+=89){let p=[seed],n=seed,s=0;while(n!==6174&&n!==0&&s<14){n=kapStep(n);p.push(n);s++}KTRJ.push(p)}
+
+// ══ CANVAS ════════════════════════════════
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H,cx,cy;
+function resize(){const r=cv.parentElement.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*devicePixelRatio;cv.height=H*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);cx=W/2;cy=H/2}
+window.addEventListener('resize',resize);resize();
+
+let rotY=0,rotX=.28,t=0,mode=0;
+function proj(x,y,z,ry=rotY,rx=rotX,fov=370){
+  let x1=x*Math.cos(ry)+z*Math.sin(ry),z1=-x*Math.sin(ry)+z*Math.cos(ry);
+  let y2=y*Math.cos(rx)-z1*Math.sin(rx),z2=y*Math.sin(rx)+z1*Math.cos(rx);
+  const s=fov/(fov+z2);return{sx:cx+x1*s,sy:cy+y2*s,s,z:z2}
+}
+
+// ══ EM FIELD ══════════════════════════════
+// Draws electric dipole field lines + B-field rings between ijk planes
+function drawEMField(SR){
+  const EMAxes=[
+    {pos:[SR,0,0],neg:[-SR,0,0],perp1:[0,1,0],perp2:[0,0,1],col:'#f43f5e',name:'i'},
+    {pos:[0,SR,0],neg:[0,-SR,0],perp1:[1,0,0],perp2:[0,0,1],col:'#34d399',name:'j'},
+    {pos:[0,0,SR],neg:[0,0,-SR],perp1:[1,0,0],perp2:[0,1,0],col:'#818cf8',name:'k'},
+  ];
+  const N=10; // field lines per axis
+  const BULGE=SR*0.78;
+
+  EMAxes.forEach(ax=>{
+    // ── E-field lines: arc from + to − pole ──
+    for(let i=0;i<N;i++){
+      const alpha=(i/N)*TAU + t*0.22; // slow rotation around axis
+      const px=ax.perp1[0]*Math.cos(alpha)+ax.perp2[0]*Math.sin(alpha);
+      const py=ax.perp1[1]*Math.cos(alpha)+ax.perp2[1]*Math.sin(alpha);
+      const pz=ax.perp1[2]*Math.cos(alpha)+ax.perp2[2]*Math.sin(alpha);
+      // Control point: midpoint + perpendicular bulge (pulsing)
+      const pulse=1+0.12*Math.sin(t*3+i);
+      const cpx=px*BULGE*pulse, cpy=py*BULGE*pulse, cpz=pz*BULGE*pulse;
+
+      const p0=proj(...ax.pos), cp=proj(cpx,cpy,cpz), p1=proj(...ax.neg);
+      // Field line
+      ctx.beginPath();ctx.moveTo(p0.sx,p0.sy);
+      ctx.quadraticCurveTo(cp.sx,cp.sy,p1.sx,p1.sy);
+      ctx.strokeStyle=ax.col+'33';ctx.lineWidth=0.8;ctx.stroke();
+
+      // Flowing particle along field line (E-field direction: + to −)
+      const ft=((t*0.4+i/N)%1);
+      const bx=(1-ft)*(1-ft)*ax.pos[0]+2*(1-ft)*ft*cpx+ft*ft*ax.neg[0];
+      const by=(1-ft)*(1-ft)*ax.pos[1]+2*(1-ft)*ft*cpy+ft*ft*ax.neg[1];
+      const bz=(1-ft)*(1-ft)*ax.pos[2]+2*(1-ft)*ft*cpz+ft*ft*ax.neg[2];
+      const bp=proj(bx,by,bz);
+      ctx.beginPath();ctx.arc(bp.sx,bp.sy,2.8*bp.s,0,TAU);
+      ctx.fillStyle=ax.col;ctx.shadowBlur=9;ctx.shadowColor=ax.col;ctx.fill();ctx.shadowBlur=0;
+    }
+
+    // ── B-field rings: circles perpendicular to each axis ──
+    // (magnetic field loops around the current axis)
+    [0.35,0.65].forEach(frac=>{
+      // Position along axis
+      const cx3=ax.pos[0]*frac+ax.neg[0]*(1-frac);
+      const cy3=ax.pos[1]*frac+ax.neg[1]*(1-frac);
+      const cz3=ax.pos[2]*frac+ax.neg[2]*(1-frac);
+      const Br=SR*(0.28+0.07*Math.sin(t*2+frac*10));
+      ctx.beginPath();
+      for(let a=0;a<=TAU+0.01;a+=0.12){
+        const rx=ax.perp1[0]*Math.cos(a)+ax.perp2[0]*Math.sin(a);
+        const ry=ax.perp1[1]*Math.cos(a)+ax.perp2[1]*Math.sin(a);
+        const rz=ax.perp1[2]*Math.cos(a)+ax.perp2[2]*Math.sin(a);
+        const p=proj(cx3+rx*Br,cy3+ry*Br,cz3+rz*Br);
+        a<0.01?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy);
+      }
+      ctx.strokeStyle=ax.col+'28';ctx.lineWidth=0.9;
+      ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+    });
+
+    // ── Charge labels at poles ──
+    const pp=proj(...ax.pos),pn=proj(...ax.neg);
+    ctx.globalAlpha=0.75;
+    // + pole glow
+    ctx.beginPath();ctx.arc(pp.sx,pp.sy,8*pp.s,0,TAU);
+    ctx.fillStyle=ax.col+'22';ctx.shadowBlur=18;ctx.shadowColor=ax.col;ctx.fill();ctx.shadowBlur=0;
+    // − pole glow
+    ctx.beginPath();ctx.arc(pn.sx,pn.sy,8*pn.s,0,TAU);
+    ctx.fillStyle='#22d3ee18';ctx.shadowBlur=14;ctx.shadowColor='#22d3ee';ctx.fill();ctx.shadowBlur=0;
+
+    ctx.font=`bold ${Math.max(11,15*pp.s)}px Georgia`;
+    ctx.fillStyle=ax.col;ctx.textAlign='center';
+    ctx.fillText('+',pp.sx,pp.sy+5*pp.s);
+    ctx.fillStyle='#22d3ee';ctx.font=`bold ${Math.max(11,15*pn.s)}px Georgia`;
+    ctx.fillText('−',pn.sx,pn.sy+5*pn.s);
+    ctx.globalAlpha=1;
+  });
+
+  // ── Inter-plane coupling: faint arcs between ij, jk, ik plane intersections ──
+  const couplings=[
+    {a:[SR*0.6,SR*0.6,0],b:[-SR*0.6,-SR*0.6,0],col:'#fbb04033'},
+    {a:[0,SR*0.6,SR*0.6],b:[0,-SR*0.6,-SR*0.6],col:'#d946ef33'},
+    {a:[SR*0.6,0,SR*0.6],b:[-SR*0.6,0,-SR*0.6],col:'#22d3ee33'},
+  ];
+  couplings.forEach(cp=>{
+    const p0=proj(...cp.a),p1=proj(...cp.b);
+    const mc=proj(0,0,0);
+    ctx.beginPath();ctx.moveTo(p0.sx,p0.sy);
+    ctx.quadraticCurveTo(mc.sx,mc.sy,p1.sx,p1.sy);
+    ctx.strokeStyle=cp.col;ctx.lineWidth=1.2;
+    ctx.setLineDash([6,8]);ctx.stroke();ctx.setLineDash([]);
+  });
+}
+
+// ══ FANO SPHERE (ijk reference frame) ════
+function drawFanoSphere(SR){
+  for(let lat=-60;lat<=60;lat+=30){
+    const ys=SR*Math.sin(lat*Math.PI/180),rr=SR*Math.cos(lat*Math.PI/180);
+    ctx.beginPath();
+    for(let lon=0;lon<=360;lon+=6){const p=proj(rr*Math.cos(lon*Math.PI/180),ys,rr*Math.sin(lon*Math.PI/180));lon===0?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy)}
+    ctx.strokeStyle='rgba(200,168,74,.07)';ctx.lineWidth=0.6;ctx.stroke();
+  }
+  for(let lon=0;lon<180;lon+=45){
+    ctx.beginPath();
+    for(let la=-90;la<=90;la+=5){const ys=SR*Math.sin(la*Math.PI/180),rr=SR*Math.cos(la*Math.PI/180);const p=proj(rr*Math.cos(lon*Math.PI/180),ys,rr*Math.sin(lon*Math.PI/180));la===-90?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy)}
+    ctx.stroke();
+  }
+  const gcDefs=[
+    {col:'#f43f5e',fn:a=>[SR*Math.cos(a),SR*Math.sin(a),0]},
+    {col:'#34d399',fn:a=>[SR*Math.cos(a),0,SR*Math.sin(a)]},
+    {col:'#818cf8',fn:a=>[0,SR*Math.cos(a),SR*Math.sin(a)]},
+  ];
+  gcDefs.forEach(gc=>{
+    ctx.beginPath();ctx.globalAlpha=0.13;
+    for(let a=0;a<=TAU+.01;a+=.05){const [x,y,z]=gc.fn(a);const p=proj(x,y,z);a<.01?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy)}
+    ctx.strokeStyle=gc.col;ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;
+  });
+  const IJK=[
+    {pos:[SR,0,0],neg:[-SR,0,0],col:'#f43f5e',pl:'+i',nl:'−i'},
+    {pos:[0,SR,0],neg:[0,-SR,0],col:'#34d399',pl:'+j',nl:'−j'},
+    {pos:[0,0,SR],neg:[0,0,-SR],col:'#818cf8',pl:'+k',nl:'−k'},
+  ];
+  IJK.forEach(ax=>{
+    const pa=proj(...ax.pos),pb=proj(...ax.neg);
+    ctx.beginPath();ctx.moveTo(pa.sx,pa.sy);ctx.lineTo(pb.sx,pb.sy);
+    ctx.strokeStyle=ax.col+'55';ctx.lineWidth=1.2;ctx.stroke();
+    [[pa,ax.pl],[pb,ax.nl]].forEach(([p,lbl])=>{
+      ctx.beginPath();ctx.arc(p.sx,p.sy,5*p.s,0,TAU);
+      ctx.fillStyle=ax.col;ctx.shadowBlur=12;ctx.shadowColor=ax.col;ctx.fill();ctx.shadowBlur=0;
+      ctx.font=`bold ${Math.max(9,12*p.s)}px Georgia`;
+      ctx.fillStyle=ax.col;ctx.textAlign='center';ctx.fillText(lbl,p.sx,p.sy-(9+5*p.s));
+    });
+  });
+  ctx.font='7px Courier New';ctx.fillStyle='rgba(200,168,74,.25)';ctx.textAlign='center';
+  ctx.fillText('S² -- quaternion reference sphere',cx,cy+SR*0.55+16);
+}
+
+// ══ DRAW: FANO EULER (synthesis overlay) ═
+function drawFanoEuler(sc,ry,alpha){
+  alpha=alpha||1;
+  const fp=FP.map(p=>({...p,...proj(p.x*sc,p.y*sc,p.z*sc,ry)}));
+  ctx.globalAlpha=alpha;
+  FL.forEach(ln=>{
+    const [a,b,c]=ln.pts.map(i=>fp[i]);
+    ctx.strokeStyle=ln.col;ctx.lineWidth=1.6;ctx.shadowBlur=9;ctx.shadowColor=ln.col;
+    ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.lineTo(c.sx,c.sy);ctx.lineTo(a.sx,a.sy);ctx.stroke();ctx.shadowBlur=0;
+  });
+  fp.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(p.sx,p.sy,Math.max(3.5,6*p.s),0,TAU);
+    ctx.fillStyle=C7[i];ctx.shadowBlur=14;ctx.shadowColor=C7[i];ctx.fill();ctx.shadowBlur=0;
+    if(sc>0.7){ctx.font=`${Math.max(8,10*p.s)}px Georgia`;ctx.fillStyle=C7[i];ctx.textAlign='center';ctx.fillText(p.lbl,p.sx,p.sy-9*p.s)}
+  });
+  ctx.globalAlpha=1;
+}
+
+// ══ DRAW: FANO 3D ════════════════════════
+function drawFano3D(){
+  const sc=1.85, SR=FR*sc*1.18;
+  drawFanoSphere(SR);
+  if(emOn) drawEMField(SR);
+
+  const fp=FP.map(p=>{
+    let [rx,ry,rz]=qRotVec(qFano,p.x*sc,p.y*sc,p.z*sc);
+    if(zetaOn){
+      let phase=0; const seed=(p.id+1)*1.7;
+      gammaZ.forEach((g,i)=>{phase+=Math.cos(g*seed-t*(9+i*1.8))});
+      rx+=Math.cos(seed)*phase*7;ry+=Math.sin(seed)*phase*7;rz+=phase*3.5;
+    }
+    const s=400/(400+rz);return{...p,sx:cx+rx*s,sy:cy+ry*s,s,depth:rz};
+  });
+
+  const slines=[...FL].sort((a,b)=>{
+    const da=a.pts.reduce((s,i)=>s+fp[i].depth,0);
+    const db=b.pts.reduce((s,i)=>s+fp[i].depth,0);return da-db;
+  });
+  slines.forEach(ln=>{
+    const [a,b,c]=ln.pts.map(i=>fp[i]);const avgS=(a.s+b.s+c.s)/3;
+    ctx.strokeStyle=ln.col;ctx.lineWidth=2.2*avgS;ctx.shadowBlur=12*avgS;ctx.shadowColor=ln.col;
+    ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.lineTo(c.sx,c.sy);ctx.lineTo(a.sx,a.sy);ctx.stroke();ctx.shadowBlur=0;
+    const mx=(a.sx+b.sx+c.sx)/3,my=(a.sy+b.sy+c.sy)/3;
+    ctx.font=`${Math.max(7,9*avgS)}px Courier New`;ctx.fillStyle=ln.col;ctx.textAlign='center';ctx.globalAlpha=.55;ctx.fillText(ln.lbl,mx,my);ctx.globalAlpha=1;
+  });
+  [...fp].sort((a,b)=>b.depth-a.depth).forEach(p=>{
+    const r=Math.max(4,8*p.s);
+    ctx.beginPath();ctx.arc(p.sx,p.sy,r,0,TAU);
+    ctx.fillStyle=C7[p.id];ctx.shadowBlur=18*p.s;ctx.shadowColor=C7[p.id];ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(p.sx,p.sy,r+3*p.s,0,TAU);ctx.strokeStyle=C7[p.id]+'44';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.font=`bold ${Math.max(9,12*p.s)}px Georgia`;ctx.fillStyle=C7[p.id];ctx.textAlign='center';ctx.fillText(p.lbl,p.sx,p.sy-r-5*p.s);
+    if(p.id===0){ctx.font='7px Courier New';ctx.fillStyle='rgba(34,211,238,.55)';ctx.fillText('71≡+1 (mod 7)',p.sx,p.sy+r+12*p.s)}
+    if(p.id===6){ctx.font='7px Courier New';ctx.fillStyle='rgba(244,63,94,.55)';ctx.fillText('83≡−1 (mod 7)',p.sx,p.sy+r+12*p.s)}
+  });
+
+  const [ax,ay,az]=qCurrentAxis,aL=FR*sc*0.72;
+  const [ax1,ay1,az1]=qRotVec(qFano,ax*aL,ay*aL,az*aL);
+  const [ax2,ay2,az2]=qRotVec(qFano,-ax*aL,-ay*aL,-az*aL);
+  const s1=400/(400+az1),s2=400/(400+az2);const acol=C7[qAxisIdx];
+  ctx.beginPath();ctx.moveTo(cx+ax1*s1,cy+ay1*s1);ctx.lineTo(cx+ax2*s2,cy+ay2*s2);
+  ctx.strokeStyle=acol+'77';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(cx+ax1*s1,cy+ay1*s1,4*s1,0,TAU);
+  ctx.fillStyle=acol;ctx.shadowBlur=10;ctx.shadowColor=acol;ctx.fill();ctx.shadowBlur=0;
+
+  const hy=H-72;
+  ctx.fillStyle='rgba(12,8,4,.55)';ctx.fillRect(8,hy-14,290,72);
+  ctx.font='8px Courier New';ctx.textAlign='left';
+  const q=qFano,ni=(qAxisIdx+1)%7;
+  ctx.fillStyle='rgba(200,168,74,.65)';ctx.fillText('QUATERNION  v\' = q·v·q*',12,hy);
+  ctx.fillStyle=C7[qAxisIdx];ctx.fillText(`q = ${q.w.toFixed(4)} + ${q.x.toFixed(4)}i + ${q.y.toFixed(4)}j + ${q.z.toFixed(4)}k`,12,hy+14);
+  ctx.fillStyle='rgba(200,168,74,.5)';ctx.fillText(`|q| = ${Math.sqrt(q.w**2+q.x**2+q.y**2+q.z**2).toFixed(6)}  (unit ✓)  720°=identity`,12,hy+28);
+  ctx.fillStyle=C7[qAxisIdx];ctx.fillText(`axis  ${FP[qAxisIdx].lbl} → ${FP[ni].lbl}   [${qCurrentAxis.map(v=>v.toFixed(2)).join(', ')}]`,12,hy+42);
+  ctx.fillStyle='rgba(200,168,74,.3)';ctx.fillText(`EM: E-field lines + B-rings  |  ij=k  jk=i  ki=j`,12,hy+56);
+}
+
+// ══ DRAW: SYNTHESIS ════════════════════
+function drawSynthesis(){
+  const pn=nodes.map(n=>({...n,...proj(n.tx,n.ty,n.tz)})).sort((a,b)=>a.z-b.z);
+  pn.forEach(n=>{
+    const big=n.is71||n.is83,r=(big?5:n.isGS?2:1.1)*n.s,col=n.is71?C7[0]:n.is83?C7[2]:C7[n.m7];
+    ctx.globalAlpha=big?1:n.isGS?.62:.16;if(big){ctx.shadowBlur=16;ctx.shadowColor=col}
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(n.sx,n.sy,r,0,TAU);ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1;
+  });
+  const p71=pn.find(n=>n.is71),p83=pn.find(n=>n.is83);
+  if(p71&&p83){
+    ctx.strokeStyle='rgba(200,168,74,.48)';ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(p71.sx,p71.sy);
+    ctx.quadraticCurveTo((p71.sx+p83.sx)/2+Math.cos(t*4)*10,(p71.sy+p83.sy)/2+Math.sin(t*4)*10,p83.sx,p83.sy);ctx.stroke();
+    ctx.font='7.5px Courier New';ctx.fillStyle='rgba(200,168,74,.55)';ctx.textAlign='center';
+    ctx.fillText('+1 ↔ −1  (mod 7)',(p71.sx+p83.sx)/2,(p71.sy+p83.sy)/2-10);
+  }
+  drawFanoEuler(0.52,rotY,0.72);
+}
+
+function drawE8(){
+  E8P.forEach(r=>{const p=proj(r.x,r.y,r.z);ctx.beginPath();ctx.arc(p.sx,p.sy,2.2*p.s,0,TAU);ctx.globalAlpha=.65*p.s;ctx.fillStyle='#c8a840';ctx.fill();ctx.globalAlpha=1});
+  const e=nodes.map(n=>({...n,...proj(n.ex,n.ey,n.ez)})).sort((a,b)=>a.z-b.z);
+  e.forEach(n=>{const big=n.is71||n.is83,r=(big?5:n.isGS?1.8:.8)*n.s,col=n.is71?C7[0]:n.is83?C7[2]:C7[n.m7];ctx.globalAlpha=big?1:n.isGS?.58:.11;ctx.fillStyle=col;ctx.beginPath();ctx.arc(n.sx,n.sy,r,0,TAU);ctx.fill();ctx.globalAlpha=1});
+}
+
+function drawRiemann(){
+  const RS=Math.min(W,H)*.38,WC='rgba(200,168,74,.055)';
+  for(let ph=0;ph<=Math.PI;ph+=Math.PI/12){ctx.beginPath();for(let th=0;th<=TAU;th+=.08){const x=RS*Math.sin(ph)*Math.cos(th),y=RS*Math.cos(ph),z=RS*Math.sin(ph)*Math.sin(th);const p=proj(x,y,z);th<.001?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy)}ctx.strokeStyle=WC;ctx.lineWidth=.5;ctx.stroke()}
+  for(let th=0;th<TAU;th+=Math.PI/7){ctx.beginPath();for(let ph=0;ph<=Math.PI;ph+=.07){const x=RS*Math.sin(ph)*Math.cos(th),y=RS*Math.cos(ph),z=RS*Math.sin(ph)*Math.sin(th);const p=proj(x,y,z);ph<.001?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy)}ctx.stroke()}
+  nodes.forEach(n=>{const re=n.tx/158,im=n.ty/158,r2=re*re+im*im,X=2*re/(r2+1),Y=2*im/(r2+1),Z=(r2-1)/(r2+1),p=proj(RS*X,RS*Y,RS*Z),big=n.is71||n.is83,col=n.is71?C7[0]:n.is83?C7[2]:C7[n.m7];ctx.globalAlpha=big?1:n.isGS?.58:.18;if(big){ctx.shadowBlur=14;ctx.shadowColor=col}ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.sx,p.sy,(big?5:n.isGS?2:1.2)*p.s,0,TAU);ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1});
+  const np=proj(0,-RS,0),sp=proj(0,RS,0);ctx.font='11px Georgia';ctx.fillStyle='rgba(200,168,74,.45)';ctx.textAlign='center';ctx.fillText('∞',np.sx,np.sy-8);ctx.fillText('0',sp.sx,sp.sy+16);
+}
+
+function drawKaprekar(){
+  const maxR=Math.min(W,H)*.41;
+  KTRJ.forEach((path,ti)=>{if(path.length<2)return;const ang0=(ti/KTRJ.length)*TAU+t*.2,r0=maxR*(.3+.65*(path[0]/9999));ctx.beginPath();path.forEach((v,si)=>{const prog=si/(path.length-1),r=r0*(1-prog)+9*prog,ang=ang0+prog*Math.PI*.55;si?ctx.lineTo(cx+r*Math.cos(ang),cy+r*Math.sin(ang)):ctx.moveTo(cx+r*Math.cos(ang),cy+r*Math.sin(ang))});ctx.strokeStyle=`hsla(${(ti/KTRJ.length)*290+25},72%,62%,.28)`;ctx.lineWidth=.7;ctx.stroke()});
+  const pu=(Math.sin(t*2.5)+1)/2;ctx.beginPath();ctx.arc(cx,cy,26+pu*13,0,TAU);ctx.strokeStyle=`rgba(200,168,74,${.72-pu*.42})`;ctx.lineWidth=1.1;ctx.stroke();
+  ctx.font='bold 20px Georgia';ctx.fillStyle='#c8a840';ctx.textAlign='center';ctx.shadowBlur=18;ctx.shadowColor='#c8a840';ctx.fillText('6174',cx,cy+6);ctx.shadowBlur=0;
+  ctx.font='7.5px Courier New';ctx.fillStyle='rgba(200,168,74,.48)';ctx.fillText('2 · 3² · 7³',cx,cy+18);
+  [{v:'5040',sub:'7!  |N|',col:C7[0],ax:.52,ay:-.3},{v:'5041',sub:'71²  Brown#',col:C7[2],ax:.5,ay:.32},{v:'1152',sub:'|W(F₄)|',col:C7[1],ax:-.52,ay:.32},{v:'154',sub:'71+83=2·7·11',col:C7[4],ax:0,ay:-.55}].forEach(s=>{const x=cx+maxR*s.ax,y=cy+maxR*s.ay;ctx.strokeStyle=s.col+'33';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(cx,cy-4);ctx.stroke();ctx.font='10px Georgia';ctx.fillStyle=s.col;ctx.textAlign='center';ctx.fillText(s.v,x,y);ctx.font='6.5px Courier New';ctx.fillStyle=s.col;ctx.globalAlpha=.5;ctx.fillText(s.sub,x,y+11);ctx.globalAlpha=1});
+}
+
+function drawWatermark(){
+  ctx.font='italic 36px Georgia';
+  ctx.fillStyle=`rgba(200,168,74,${.032+.013*Math.sin(t*.45)})`;
+  ctx.textAlign='center';ctx.fillText('DYR OPNAST',cx,cy-H*.4);
+}
+
+// ══ QUATERNION UPDATE ════════════════════
+function updateQuat(){
+  qFrames++;const nextIdx=(qAxisIdx+1)%7;
+  if(qFrames>=Q_DWELL){qAxisIdx=nextIdx;qFrames=0}
+  const blend=qFrames>Q_DWELL-70?(qFrames-(Q_DWELL-70))/70:0;
+  const axA=FANO_AXES[qAxisIdx],axB=FANO_AXES[(qAxisIdx+1)%7];
+  const ax=axA[0]*(1-blend)+axB[0]*blend,ay=axA[1]*(1-blend)+axB[1]*blend,az=axA[2]*(1-blend)+axB[2]*blend;
+  const m=Math.sqrt(ax*ax+ay*ay+az*az)||1;qCurrentAxis=[ax/m,ay/m,az/m];
+  const speeds=[.009,.011,.008,.013,.007,.010,.012];
+  qFano=qNorm(qMul(qFano,qFromAxis(qCurrentAxis[0],qCurrentAxis[1],qCurrentAxis[2],speeds[qAxisIdx])));
+}
+
+// ══ MAIN LOOP ════════════════════════════
+function frame(){
+  ctx.clearRect(0,0,W,H);t+=.007;rotY+=.0028;
+  drawWatermark();
+  if(mode==2)updateQuat();
+  if(mode==0)drawSynthesis();
+  else if(mode==1)drawE8();
+  else if(mode==2)drawFano3D();
+  else if(mode==3)drawRiemann();
+  else drawKaprekar();
+  requestAnimationFrame(frame);
+}
+frame();
+
+// ══ UI ═══════════════════════════════════
+const codex=document.getElementById('codex'),togbtn=document.getElementById('togbtn');
+let codexOpen=true;
+togbtn.addEventListener('click',function(){
+  codexOpen=!codexOpen;codex.classList.toggle('hide',!codexOpen);togbtn.classList.toggle('on',codexOpen);setTimeout(resize,320);
+});
+const RDOUT=[
+'MODE: SYNTHESIS\nNODES: 1152 coprime of 7!\nFANO overlay: active\n71≡+1 · 83≡−1 (mod 7)',
+'MODE: E₈ PROJECTION\nROOTS: 240 (Elser–Sloane)\nφ-SCALED: anisotropic\nW(F₄): 1152 modes',
+'MODE: FANO 3D  +  ijk SPHERE\nv\' = q·v·q*  sandwich product\nFano tumbles inside S² frame\n⚡ EM: E-field lines + B-rings',
+'MODE: RIEMANN SPHERE\nDOMAIN: ℂ ∪ {∞}\n1152 nodes → S² map\nMind-state domain: complete',
+'MODE: KAPREKAR ATTRACTOR\n6174 = 2·3²·7³\n5041 = 71² (Brown number)\nConvergence: ≤7 steps',
+];
+document.querySelectorAll('.btn[data-m]').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    mode=+this.dataset.m;
+    document.querySelectorAll('.btn[data-m]').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on');document.getElementById('rdout').innerText=RDOUT[mode];
+  });
+});
+document.getElementById('zetabtn').addEventListener('click',function(){
+  zetaOn=!zetaOn;this.classList.toggle('on',zetaOn);
+  if(mode==2)document.getElementById('rdout').innerText=RDOUT[2]+(zetaOn?'\nζ FORCING: γ₁..γ₅ active':'');
+});
+document.getElementById('embtn').addEventListener('click',function(){
+  emOn=!emOn;this.classList.toggle('on',emOn);
+});
+
+// ══ AMORC φ-BILATERAL AUDIO ══════════════
+// 432 Hz = Rosicrucian natural A (Verdi tuning)
+// 528 Hz = Solfeggio MI (sacred / AMORC tradition)
+// Pan rates differ by φ → golden spiral stereo, never repeating
+// Both pass through compressor: zero clipping
+let audioOn=false,aCtx,gainNode;
+document.getElementById('abtn').addEventListener('click',function(){
+  if(!aCtx){
+    aCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const comp=aCtx.createDynamicsCompressor();
+    comp.threshold.value=-16;comp.knee.value=10;
+    comp.ratio.value=5;comp.attack.value=0.003;comp.release.value=0.25;
+    comp.connect(aCtx.destination);
+    gainNode=aCtx.createGain();gainNode.gain.value=0;gainNode.connect(comp);
+
+    // 432 Hz pans at base rate ω; 528 Hz pans at ω×φ → never same position twice
+    const BASE_RATE=0.028; // ~36s base cycle
+    [[432, BASE_RATE, 1],[528, BASE_RATE*PHI, -1]].forEach(([freq,lfoRate,sign])=>{
+      const osc=aCtx.createOscillator();osc.type='sine';osc.frequency.value=freq;
+      const panner=aCtx.createStereoPanner();panner.pan.value=sign>0?-1:1;
+      const lfo=aCtx.createOscillator();lfo.type='sine';lfo.frequency.value=lfoRate;
+      const lfoG=aCtx.createGain();lfoG.gain.value=sign*0.9;
+      lfo.connect(lfoG);lfoG.connect(panner.pan);
+      osc.connect(panner);panner.connect(gainNode);
+      osc.start();lfo.start();
+    });
+  }
+  if(aCtx.state==='suspended')aCtx.resume();
+  audioOn=!audioOn;
+  gainNode.gain.setTargetAtTime(audioOn?0.08:0,aCtx.currentTime,0.2);
+  this.classList.toggle('on',audioOn);
+  this.textContent=audioOn?'■ 432 + 528 φ-bilateral':'♪ AMORC φ-bilateral';
+});
+</script>
+
+</body>
+</html>
